@@ -2,8 +2,8 @@ package com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels;
 
 public class Token
 {
-    String accessToken;
-    String refreshToken;
+    public String accessToken;
+    public String refreshToken;
 
     public Token (String accessToken, String refreshToken)
     {

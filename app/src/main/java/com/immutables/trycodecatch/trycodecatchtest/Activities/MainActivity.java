@@ -1,5 +1,6 @@
-package com.immutables.trycodecatch.trycodecatchtest;
+package com.immutables.trycodecatch.trycodecatchtest.Activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -14,6 +15,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
+import com.immutables.trycodecatch.trycodecatchtest.R;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
 {
 
@@ -24,7 +28,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener()
@@ -78,6 +81,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_logout)
         {
+            SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putBoolean("isLoggedIn", false);
+            editor.putString("username", null);
+            editor.putString("password", null);
+            editor.putString("accessToken", null);
+            editor.apply();
+            Intent loginActivityIntent = new Intent(MainActivity.this, LoginActivity.class);
+            loginActivityIntent.setFlags(loginActivityIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(loginActivityIntent);
             return true;
         }
 

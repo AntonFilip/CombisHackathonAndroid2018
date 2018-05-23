@@ -1,8 +1,10 @@
-package com.immutables.trycodecatch.trycodecatchtest;
+package com.immutables.trycodecatch.trycodecatchtest.Activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -19,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,15 +32,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
+import com.immutables.trycodecatch.trycodecatchtest.BackendService;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
+import com.immutables.trycodecatch.trycodecatchtest.R;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
 {
 
     /**
@@ -65,7 +80,19 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
+        setContentView(R.layout.activity_login);
+        SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
+        //TODO enable after testing is done
+        //if (sp.getBoolean("isLoggedIn", false))
+        //{
+        //    Intent mainActivityIntent = new Intent(LoginActivity.this, MainActivity.class);
+        //    startActivity(mainActivityIntent);
+        //}
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://139.59.156.58:8080/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+        ApplicationContext.backendService = retrofit.create(BackendService.class);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -307,7 +334,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     private void addEmailsToAutoComplete(List<String> emailAddressCollection)
     {
         //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(RegisterActivity.this, android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(LoginActivity.this, android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
     }
@@ -342,28 +369,33 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         {
             // TODO: attempt authentication against a network service.
 
+            // Simulate network access.
+            Call<LoginResponse> loginCall = ApplicationContext.backendService.loginUser(new LoginModel(mEmail, mPassword));
             try
             {
-                // Simulate network access.
-                Thread.sleep(2000);
-            }
-            catch (InterruptedException e)
-            {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS)
-            {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail))
+                Response response = loginCall.execute();
+                if (response.isSuccessful())
                 {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                    LoginResponse loginResponse = (LoginResponse) response.body();
+                    if (loginResponse.success)
+                    {
+                        ApplicationContext.token = loginResponse.data.token;
+                        ApplicationContext.loggedInUser = loginResponse.data.user;
+                        return true;
+                    }
+                    else
+                    {
+                        Snackbar.make(mEmailView, "Wrong credentials, user/password is incorrect.", Snackbar.LENGTH_LONG).show();
+                        Log.d("Login", "Login failed, wrong credentials");
+                    }
                 }
             }
+            catch (IOException e)
+            {
+                Log.d("Login response exception", e.getMessage());
+            }
 
-            // TODO: register the new account here.
-            return true;
+            return false;
         }
 
         @Override
@@ -374,12 +406,21 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
             if (success)
             {
-                finish();
+                SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sp.edit();
+                editor.putBoolean("isLoggedIn", true);
+                editor.putString("username", mEmail);
+                editor.putString("password", mPassword);
+                editor.putString("accessToken", ApplicationContext.token.accessToken);
+                editor.apply();
+
+                Intent mainActivityIntent = new Intent(LoginActivity.this, MainActivity.class);
+                mainActivityIntent.setFlags(mainActivityIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(mainActivityIntent);
             }
             else
             {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                mEmailView.requestFocus();
             }
         }
 
