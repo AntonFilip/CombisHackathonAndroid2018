@@ -1,4 +1,4 @@
-package com.immutables.trycodecatch.trycodecatchtest.Models;
+package com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels;
 
 public class Token
 {

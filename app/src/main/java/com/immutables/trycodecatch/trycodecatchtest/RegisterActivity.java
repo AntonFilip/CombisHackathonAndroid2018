@@ -3,8 +3,6 @@ package com.immutables.trycodecatch.trycodecatchtest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -21,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -32,24 +29,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
-import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
+public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>
 {
 
     /**
@@ -77,19 +65,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
-        //TODO enable after testing is done
-        //if (sp.getBoolean("isLoggedIn", false))
-        //{
-        //    Intent mainActivityIntent = new Intent(LoginActivity.this, MainActivity.class);
-        //    startActivity(mainActivityIntent);
-        //}
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://139.59.156.58:8080/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        ApplicationContext.backendService = retrofit.create(BackendService.class);
+        setContentView(R.layout.activity_register);
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
@@ -331,7 +307,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void addEmailsToAutoComplete(List<String> emailAddressCollection)
     {
         //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(LoginActivity.this, android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(RegisterActivity.this, android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
     }
@@ -366,23 +342,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         {
             // TODO: attempt authentication against a network service.
 
-            // Simulate network access.
-            Call<LoginResponse> loginCall = ApplicationContext.backendService.loginUser(new LoginModel(mEmail, mPassword));
             try
             {
-                Response response = loginCall.execute();
-                if (response.isSuccessful())
-                {
-                    LoginResponse loginResponse = (LoginResponse) response.body();
-                    if (loginResponse.success)
-                    {
-                        loginResponse.data.
-                    }
-                }
+                // Simulate network access.
+                Thread.sleep(2000);
             }
-            catch (IOException e)
+            catch (InterruptedException e)
             {
-                Log.d("Login response exception", e.getMessage());
+                return false;
+            }
+
+            for (String credential : DUMMY_CREDENTIALS)
+            {
+                String[] pieces = credential.split(":");
+                if (pieces[0].equals(mEmail))
+                {
+                    // Account exists, return true if the password matches.
+                    return pieces[1].equals(mPassword);
+                }
             }
 
             // TODO: register the new account here.
@@ -397,15 +374,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             if (success)
             {
-                SharedPreferences sp = getSharedPreferences("Login", MODE_PRIVATE);
-                SharedPreferences.Editor editor = sp.edit();
-                editor.putBoolean("isLoggedIn", true);
-                editor.putString("username", mEmail);
-                editor.putString("password", mPassword);
-                editor.apply();
-
-                Intent mainActivityIntent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(mainActivityIntent);
+                finish();
             }
             else
             {

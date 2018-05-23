@@ -1,7 +1,7 @@
 package com.immutables.trycodecatch.trycodecatchtest;
 
-import com.immutables.trycodecatch.trycodecatchtest.Models.LoginModel;
-import com.immutables.trycodecatch.trycodecatchtest.Models.LoginResponse;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
