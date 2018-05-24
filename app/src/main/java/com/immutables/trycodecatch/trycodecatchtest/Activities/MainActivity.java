@@ -3,9 +3,14 @@ package com.immutables.trycodecatch.trycodecatchtest.Activities;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.MotionEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -23,11 +28,27 @@ import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
+import com.immutables.trycodecatch.trycodecatchtest.DonationsAdapter;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.DonationResponse;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.DonationResponseData;
 import com.immutables.trycodecatch.trycodecatchtest.R;
 import com.journeyapps.barcodescanner.BarcodeEncoder;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+
+import retrofit2.Call;
+import retrofit2.Response;
+
+import static android.support.v7.widget.RecyclerView.HORIZONTAL;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
 {
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -46,6 +67,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
         });
+        mRecyclerView = (RecyclerView) findViewById(R.id.donationsRecyclerView);
+        mLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        DividerItemDecoration itemDecor = new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL);
+        mRecyclerView.addItemDecoration(itemDecor);
+        final ArrayList<DonationResponseData> recyclerData = new ArrayList<>();
+        final Call<DonationResponse> donationCall = ApplicationContext.backendService.getUserDonations(ApplicationContext.token.accessToken, ApplicationContext.loggedInUser.id);
+        new AsyncTask<Void, Void, ArrayList<DonationResponseData>>(){
+            @Override
+            protected ArrayList<DonationResponseData> doInBackground(Void... voids)
+            {
+                try
+                {
+                    Response response = donationCall.execute();
+                    if(response.isSuccessful()){
+                        DonationResponse donationResponse = (DonationResponse) response.body();
+                        if(donationResponse.success)
+                        {
+                            recyclerData.addAll(new ArrayList<DonationResponseData>(Arrays.asList(donationResponse.data)));
+                        }
+                    }
+                    else
+                    {
+                        Snackbar.make(mRecyclerView,"Unsuccessful response from server.", Snackbar.LENGTH_LONG).show();
+
+                    }
+                }
+                catch (IOException e)
+                {
+                    e.printStackTrace();
+                    Snackbar.make(mRecyclerView,"Error while loading data from server.", Snackbar.LENGTH_LONG).show();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(ArrayList<DonationResponseData> donationResponseData)
+            {
+                mAdapter.notifyDataSetChanged();
+            }
+        }.execute();
+        mAdapter = new DonationsAdapter(recyclerData);
+        mRecyclerView.setAdapter(mAdapter);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);

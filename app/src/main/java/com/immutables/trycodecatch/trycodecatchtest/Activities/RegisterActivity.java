@@ -38,7 +38,7 @@ import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.RegisterResponse;
-import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.User;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.UserRegister;
 import com.immutables.trycodecatch.trycodecatchtest.R;
 
 import java.io.IOException;
@@ -333,7 +333,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            User user = new User(firstName, lastName, phoneNumber, email, yearOfBirth, gender, address, bloodType, password);
+            UserRegister user = new UserRegister(firstName, lastName, phoneNumber, email, yearOfBirth, gender, address, bloodType, password);
             mAuthTask = new UserRegisterTask(user);
             mAuthTask.execute((Void) null);
         }
@@ -452,9 +452,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     public class UserRegisterTask extends AsyncTask<Void, Void, Boolean>
     {
 
-        private final User user;
+        private final UserRegister user;
 
-        UserRegisterTask(User user)
+        UserRegisterTask(UserRegister user)
         {
             this.user = user;
         }
@@ -476,7 +476,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
                     }
                     else
                     {
-                        LoginModel loginModel = new LoginModel(this.user.email, this.user.password);
+                        LoginModel loginModel = new LoginModel(mEmailView.getText().toString(), mPasswordView.getText().toString());
                         Call<LoginResponse> loginCall = ApplicationContext.backendService.loginUser(loginModel);
                         Response response1 = loginCall.execute();
                         if (response1.isSuccessful())
