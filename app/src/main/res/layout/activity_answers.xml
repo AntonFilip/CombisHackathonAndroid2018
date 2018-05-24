@@ -8,12 +8,13 @@
     tools:context=".Activities.AnswersActivity">
 
     <TextView
+        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginStart="16dp"
         android:id="@+id/unanswered_TV"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="@color/colorAccent"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="24dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Your unanswered questions:"/>

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MeDonor</string>
+    <string name="app_name">Bet there. Save lives.</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_header_title">Android Studio</string>
@@ -37,6 +37,7 @@
     <string name="birth_year">Birth year</string>
     <string name="title_activity_donation_desc">Your donation</string>
     <string name="questioneers">Questioneers</string>
+    <string name="Question">Question</string>
 
 
 </resources>

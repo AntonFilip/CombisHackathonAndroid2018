@@ -29,4 +29,7 @@ public interface BackendService
 
     @GET("/api/v1/answers/authenticated")
     Call<AnswerResponse> getUserAnswers(@Header("Authorization") String authorization);
+
+    @POST("/api/v1/answers")
+    Call<AnswerResponse> postAnswer(@Header("Authorization") String authorization, @Body Answer answer);
 }

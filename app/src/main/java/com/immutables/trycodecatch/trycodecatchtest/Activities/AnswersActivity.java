@@ -85,7 +85,8 @@ public class AnswersActivity extends AppCompatActivity
             {
                 AnswerResponseData data = answerResponseDataArray.get(position);
                 Intent answersActivityIntent = new Intent(AnswersActivity.this, QuestionActivity.class);
-
+                answersActivityIntent.putExtra("Question", data.question.description);
+                answersActivityIntent.putExtra("QuestionID", data.question.id);
                 startActivity(answersActivityIntent);
             }
         });

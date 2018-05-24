@@ -42,7 +42,8 @@
             android:name=".Activities.AnswersActivity"
             android:label="@string/questioneers">
         </activity>
-        <activity android:name=".Activities.QuestionActivity">
+        <activity android:name=".Activities.QuestionActivity"
+                  android:label="@string/Question">
         </activity>
     </application>
 

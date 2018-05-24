@@ -180,8 +180,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         };
 
         dialogBuilder = new AlertDialog.Builder(this);
-        dialogBuilder.setMessage("By registering you agree that your personal data can be used and stored" +
-                "on our platform").setPositiveButton("Agree", dialogClickListener)
+        dialogBuilder.setMessage("By registering you agree that your personal data can be used and stored " +
+                "on our platform.").setPositiveButton("Agree", dialogClickListener)
                 .setNegativeButton("Do not agree", dialogClickListener);
     }
 
