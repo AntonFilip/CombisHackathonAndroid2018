@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ImageView QRImageView = (ImageView) header.findViewById(R.id.QR_image_view);
         ((TextView) header.findViewById(R.id.user_textview)).setText(ApplicationContext.loggedInUser.firstName + " " + ApplicationContext.loggedInUser.lastName);
         ((TextView) header.findViewById(R.id.userEmail)).setText(ApplicationContext.loggedInUser.email);
-        String QRCodeString = ApplicationContext.loggedInUser.firstName; // Whatever you need to encode in the QR code
+        String QRCodeString = ApplicationContext.loggedInUser.id; // Whatever you need to encode in the QR code
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         try {
             BitMatrix bitMatrix = multiFormatWriter.encode(QRCodeString, BarcodeFormat.QR_CODE,200,200);

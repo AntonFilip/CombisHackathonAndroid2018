@@ -9,4 +9,11 @@
     tools:context=".Activities.DonationDescActivity"
     tools:showIn="@layout/activity_donation_desc">
 
+    <ListView
+        android:id="@+id/donations_details_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </ListView>
+
 </android.support.constraint.ConstraintLayout>
