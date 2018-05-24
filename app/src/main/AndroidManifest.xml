@@ -38,6 +38,12 @@
             android:label="@string/title_activity_donation_desc"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>
+        <activity
+            android:name=".Activities.AnswersActivity"
+            android:label="@string/questioneers">
+        </activity>
+        <activity android:name=".Activities.QuestionActivity">
+        </activity>
     </application>
 
 </manifest>

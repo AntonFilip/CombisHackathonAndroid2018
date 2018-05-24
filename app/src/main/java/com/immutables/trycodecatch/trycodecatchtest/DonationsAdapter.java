@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.immutables.trycodecatch.trycodecatchtest.Activities.DonationDescActivity;
@@ -53,8 +54,25 @@ public class DonationsAdapter extends RecyclerView.Adapter<DonationsAdapter.View
     public void onBindViewHolder(ViewHolder holder, final int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
-        holder.mDonationTV.setText("Donation date: " + ((DonationResponseData)mDataset.get(position)).modifiedAt.substring(0, 10));
-        holder.mDescriptionTV.setText("Description: " + ((DonationResponseData)mDataset.get(position)).description);
+        if (((DonationResponseData)mDataset.get(position)).modifiedAt != "")
+        {
+            holder.mDonationTV.setText("Donation date: " + ((DonationResponseData) mDataset.get(position)).modifiedAt.substring(0, 10));
+        }
+        else
+        {
+            holder.mDonationTV.setText("");
+        }
+        if(((DonationResponseData)mDataset.get(position)).description != "")
+        {
+            holder.mDescriptionTV.setText("Description: " + ((DonationResponseData)mDataset.get(position)).description);
+        }
+        else
+        {
+            holder.mDescriptionTV.setText("");
+            holder.view.setVisibility(View.GONE);
+            holder.mDescriptionTV.setVisibility(View.GONE);
+            holder.mDonationTV.setVisibility(View.GONE);
+        }
         holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

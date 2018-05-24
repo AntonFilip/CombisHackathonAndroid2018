@@ -1,5 +1,6 @@
 package com.immutables.trycodecatch.trycodecatchtest;
 
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.AnswerResponse;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.DonationResponse;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
 import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
@@ -25,4 +26,7 @@ public interface BackendService
 
     @GET("/api/v1/user-donation/user/{id}")
     Call<DonationResponse> getUserDonations(@Header("Authorization") String authorization, @Path("id") String id);
+
+    @GET("/api/v1/answers/authenticated")
+    Call<AnswerResponse> getUserAnswers(@Header("Authorization") String authorization);
 }

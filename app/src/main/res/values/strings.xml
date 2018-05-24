@@ -35,7 +35,8 @@
     <string name="place_of_residence">Address</string>
     <string name="blood_type">Blood type</string>
     <string name="birth_year">Birth year</string>
-    <string name="title_activity_donation_desc">DonationDescActivity</string>
+    <string name="title_activity_donation_desc">Your donation</string>
+    <string name="questioneers">Questioneers</string>
 
 
 </resources>

@@ -59,55 +59,40 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View view)
-            {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-            }
-        });
+
         mRecyclerView = (RecyclerView) findViewById(R.id.donationsRecyclerView);
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
         DividerItemDecoration itemDecor = new DividerItemDecoration(getApplicationContext(), DividerItemDecoration.VERTICAL);
         mRecyclerView.addItemDecoration(itemDecor);
         final ArrayList<DonationResponseData> recyclerData = new ArrayList<>();
+        DonationResponseData emptyData = new DonationResponseData();
+        emptyData.modifiedAt = "";
+        emptyData.description = "";
+        emptyData.user = null;
+        emptyData.id = "";
+        recyclerData.add(emptyData);
+        DonationResponseData firstData = new DonationResponseData();
+        firstData.modifiedAt = "2018-01-23";
+        firstData.description = "Prvo davanje krvi";
+        firstData.user = null;
+        firstData.id = "";
+        recyclerData.add(firstData);
+        DonationResponseData secondData = new DonationResponseData();
+        secondData.modifiedAt = "2017-02-23";
+        secondData.description = "Drugo davanje krvi";
+        secondData.user = null;
+        secondData.id = "";
+        recyclerData.add(secondData);
+        DonationResponseData thirdData = new DonationResponseData();
+        thirdData.modifiedAt = "2018-06-13";
+        thirdData.description = "Trece davanje krvi";
+        thirdData.user = null;
+        thirdData.id = "";
+        recyclerData.add(thirdData);
         final Call<DonationResponse> donationCall = ApplicationContext.backendService.getUserDonations(ApplicationContext.token.accessToken, ApplicationContext.loggedInUser.id);
-        new AsyncTask<Void, Void, ArrayList<DonationResponseData>>(){
-            @Override
-            protected ArrayList<DonationResponseData> doInBackground(Void... voids)
-            {
-                try
-                {
-                    Response response = donationCall.execute();
-                    if(response.isSuccessful()){
-                        DonationResponse donationResponse = (DonationResponse) response.body();
-                        if(donationResponse.success)
-                        {
-                            recyclerData.addAll(new ArrayList<DonationResponseData>(Arrays.asList(donationResponse.data)));
-                        }
-                    }
-                    else
-                    {
-                        Snackbar.make(mRecyclerView,"Unsuccessful response from server.", Snackbar.LENGTH_LONG).show();
 
-                    }
-                }
-                catch (IOException e)
-                {
-                    e.printStackTrace();
-                    Snackbar.make(mRecyclerView,"Error while loading data from server.", Snackbar.LENGTH_LONG).show();
-                }
-                return null;
-            }
 
-            @Override
-            protected void onPostExecute(ArrayList<DonationResponseData> donationResponseData)
-            {
-                mAdapter.notifyDataSetChanged();
-            }
-        }.execute();
         mAdapter = new DonationsAdapter(recyclerData);
         mRecyclerView.setAdapter(mAdapter);
 
@@ -118,10 +103,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 
         View header = navigationView.getHeaderView(0);
+        navigationView.setNavigationItemSelectedListener(this);
         ImageView QRImageView = (ImageView) header.findViewById(R.id.QR_image_view);
         ((TextView) header.findViewById(R.id.user_textview)).setText(ApplicationContext.loggedInUser.firstName + " " + ApplicationContext.loggedInUser.lastName);
         ((TextView) header.findViewById(R.id.userEmail)).setText(ApplicationContext.loggedInUser.email);
-        String QRCodeString = ApplicationContext.loggedInUser.id; // Whatever you need to encode in the QR code
+        String QRCodeString = ApplicationContext.loggedInUser.email; // Whatever you need to encode in the QR code
         MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
         try {
             BitMatrix bitMatrix = multiFormatWriter.encode(QRCodeString, BarcodeFormat.QR_CODE,200,200);
@@ -191,30 +177,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera)
+        if (id == R.id.questions)
         {
-            // Handle the camera action
+            Intent answersActivityIntent = new Intent(MainActivity.this, AnswersActivity.class);
+            startActivity(answersActivityIntent);
         }
-        else if (id == R.id.nav_gallery)
-        {
 
-        }
-        else if (id == R.id.nav_slideshow)
-        {
-
-        }
-        else if (id == R.id.nav_manage)
-        {
-
-        }
-        else if (id == R.id.nav_share)
-        {
-
-        }
-        else if (id == R.id.nav_send)
-        {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

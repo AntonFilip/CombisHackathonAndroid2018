@@ -22,7 +22,7 @@ public class DonationDescActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ListView lv = (ListView) findViewById(R.id.donations_details_list);
-        lv.
+
         Intent intent = getIntent();
         //intent.getStringExtra();
 
