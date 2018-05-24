@@ -2,6 +2,7 @@ package com.immutables.trycodecatch.trycodecatchtest.Activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,9 +15,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.WriterException;
+import com.google.zxing.common.BitMatrix;
 import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
 import com.immutables.trycodecatch.trycodecatchtest.R;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
 {
@@ -43,9 +51,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+
+        View header = navigationView.getHeaderView(0);
+        ImageView QRImageView = (ImageView) header.findViewById(R.id.QR_image_view);
+        ((TextView) header.findViewById(R.id.user_textview)).setText(ApplicationContext.loggedInUser.firstName + " " + ApplicationContext.loggedInUser.lastName);
+        ((TextView) header.findViewById(R.id.userEmail)).setText(ApplicationContext.loggedInUser.email);
+        String QRCodeString = ApplicationContext.loggedInUser.firstName; // Whatever you need to encode in the QR code
+        MultiFormatWriter multiFormatWriter = new MultiFormatWriter();
+        try {
+            BitMatrix bitMatrix = multiFormatWriter.encode(QRCodeString, BarcodeFormat.QR_CODE,200,200);
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            Bitmap bitmap = barcodeEncoder.createBitmap(bitMatrix);
+            QRImageView.setImageBitmap(bitmap);
+        } catch (WriterException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -88,6 +109,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             editor.putString("password", null);
             editor.putString("accessToken", null);
             editor.apply();
+            ApplicationContext.token = null;
+            ApplicationContext.loggedInUser = null;
             Intent loginActivityIntent = new Intent(MainActivity.this, LoginActivity.class);
             loginActivityIntent.setFlags(loginActivityIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(loginActivityIntent);

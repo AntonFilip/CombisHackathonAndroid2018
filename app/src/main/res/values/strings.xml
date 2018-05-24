@@ -28,7 +28,13 @@
     <string name="last_name">Last Name</string>
     <string name="gender">Gender</string>
     <string name="authority_group">Authority Group</string>
-
+    <string name="action_login_screen">Log in</string>
+    <string name="or">OR</string>
+    <string name="phone_number">Phone number</string>
+    <string name="birth_date">Birth date</string>
+    <string name="place_of_residence">Place of residence</string>
+    <string name="blood_type">Blood type</string>
+    <string name="birth_year">Birth year</string>
 
 
 </resources>

@@ -3,9 +3,12 @@ package com.immutables.trycodecatch.trycodecatchtest.Activities;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
@@ -19,6 +22,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -27,12 +31,22 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.immutables.trycodecatch.trycodecatchtest.ApplicationContext;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginModel;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.LoginResponse;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.RegisterResponse;
+import com.immutables.trycodecatch.trycodecatchtest.Models.BackendModels.User;
 import com.immutables.trycodecatch.trycodecatchtest.R;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Response;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -55,13 +69,22 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private UserLoginTask mAuthTask = null;
+    private UserRegisterTask mAuthTask = null;
 
     // UI references.
-    private AutoCompleteTextView mEmailView;
-    private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private EditText mFirstNameView;
+    private EditText mLastNameView;
+    private EditText mPhoneNumberView;
+    private AutoCompleteTextView mEmailView;
+    private EditText mPasswordView;
+    private EditText mBirthYearView;
+    private Spinner mGenderSpinner;
+    private Spinner mBloodTypeSpinner;
+    private EditText mPlaceOfResidenceView;
+    private AlertDialog.Builder dialogBuilder;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -69,36 +92,96 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         // Set up the login form.
-        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         populateAutoComplete();
-
+        mFirstNameView = (EditText) findViewById(R.id.firstName);
+        mLastNameView = (EditText) findViewById(R.id.lastName);
+        mPhoneNumberView = (EditText) findViewById(R.id.phone_number);
+        mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener()
+        mBirthYearView = (EditText) findViewById(R.id.birth_year);
+        mGenderSpinner = (Spinner) findViewById(R.id.gender_spinner);
+        List<String> spinnerArrayGender =  new ArrayList<String>();
+        spinnerArrayGender.add("M");
+        spinnerArrayGender.add("F");
+        ArrayAdapter<String> adapterGender = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item, spinnerArrayGender);
+
+        adapterGender.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Spinner sGenderItems = (Spinner) findViewById(R.id.gender_spinner);
+        sGenderItems.setAdapter(adapterGender);
+        mBloodTypeSpinner = (Spinner) findViewById(R.id.blood_type);
+        List<String> spinnerArrayBlood =  new ArrayList<String>();
+        spinnerArrayBlood.add("0-");
+        spinnerArrayBlood.add("0+");
+        spinnerArrayBlood.add("A-");
+        spinnerArrayBlood.add("A+");
+        spinnerArrayBlood.add("B-");
+        spinnerArrayBlood.add("B+");
+        spinnerArrayBlood.add("AB-");
+        spinnerArrayBlood.add("AB+");
+        ArrayAdapter<String> adapterBlood = new ArrayAdapter<String>(
+                this, android.R.layout.simple_spinner_item, spinnerArrayBlood);
+
+        adapterBlood.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        Spinner sBloodItems = (Spinner) findViewById(R.id.blood_type);
+        sBloodItems.setAdapter(adapterBlood);
+        mPlaceOfResidenceView = (EditText) findViewById(R.id.place_of_residence);
+
+        mPlaceOfResidenceView.setOnEditorActionListener(new TextView.OnEditorActionListener()
         {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent)
             {
                 if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL)
                 {
-                    attemptLogin();
+                    dialogBuilder.show();
                     return true;
                 }
                 return false;
             }
         });
 
-        Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
-        mEmailSignInButton.setOnClickListener(new OnClickListener()
+        Button register = (Button) findViewById(R.id.register_button);
+        register.setOnClickListener(new OnClickListener()
         {
             @Override
             public void onClick(View view)
             {
-                attemptLogin();
+                dialogBuilder.show();
+            }
+        });
+
+        Button login = (Button) findViewById(R.id.go_to_login_screen_button);
+        login.setOnClickListener(new OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent loginActivityIntent = new Intent(RegisterActivity.this, LoginActivity.class);
+                loginActivityIntent.setFlags(loginActivityIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(loginActivityIntent);
             }
         });
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        attemptRegister();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            }
+        };
+
+        dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setMessage("Do you agree with our GDPR complaint?").setPositiveButton("Agree", dialogClickListener)
+                .setNegativeButton("Do not agree", dialogClickListener);
     }
 
     private void populateAutoComplete()
@@ -161,29 +244,45 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
-    private void attemptLogin()
+    private void attemptRegister()
     {
-        if (mAuthTask != null)
-        {
-            return;
-        }
-
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
+        String firstName = mFirstNameView.getText().toString();
+        String lastName = mLastNameView.getText().toString();
+        String phoneNumber = mPhoneNumberView.getText().toString();
         String email = mEmailView.getText().toString();
+        String yearOfBirth = mBirthYearView.getText().toString();
+        String gender = (String)(mGenderSpinner.getSelectedItem());
+        String address = mPlaceOfResidenceView.getText().toString();
+        String bloodType = (String)(mBloodTypeSpinner.getSelectedItem());
         String password = mPasswordView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
         // Check for a valid password, if the user entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password))
+        if (TextUtils.isEmpty(password) || !isPasswordValid(password))
         {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(address))
+        {
+            mPlaceOfResidenceView.setError(getString(R.string.error_field_required));
+            focusView = mPlaceOfResidenceView;
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(yearOfBirth))
+        {
+            mBirthYearView.setError(getString(R.string.error_field_required));
+            focusView = mBirthYearView;
             cancel = true;
         }
 
@@ -201,6 +300,28 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             cancel = true;
         }
 
+        if (TextUtils.isEmpty(phoneNumber))
+        {
+            mPhoneNumberView.setError(getString(R.string.error_field_required));
+            focusView = mPhoneNumberView;
+            cancel = true;
+        }
+
+
+        if (TextUtils.isEmpty(lastName))
+        {
+            mLastNameView.setError(getString(R.string.error_field_required));
+            focusView = mLastNameView;
+            cancel = true;
+        }
+
+        if (TextUtils.isEmpty(firstName))
+        {
+            mFirstNameView.setError(getString(R.string.error_field_required));
+            focusView = mFirstNameView;
+            cancel = true;
+        }
+
         if (cancel)
         {
             // There was an error; don't attempt login and focus the first
@@ -212,7 +333,8 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(email, password);
+            User user = new User(firstName, lastName, phoneNumber, email, yearOfBirth, gender, address, bloodType, password);
+            mAuthTask = new UserRegisterTask(user);
             mAuthTask.execute((Void) null);
         }
     }
@@ -327,45 +449,60 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean>
+    public class UserRegisterTask extends AsyncTask<Void, Void, Boolean>
     {
 
-        private final String mEmail;
-        private final String mPassword;
+        private final User user;
 
-        UserLoginTask(String email, String password)
+        UserRegisterTask(User user)
         {
-            mEmail = email;
-            mPassword = password;
+            this.user = user;
         }
 
         @Override
         protected Boolean doInBackground(Void... params)
         {
-            // TODO: attempt authentication against a network service.
-
+            Call<RegisterResponse> registerCall = ApplicationContext.backendService.registerUser(user);
             try
             {
-                // Simulate network access.
-                Thread.sleep(2000);
-            }
-            catch (InterruptedException e)
-            {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS)
-            {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail))
+                Response response = registerCall.execute();
+                if (response.isSuccessful())
                 {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
+                    RegisterResponse registerResponse = (RegisterResponse) response.body();
+                    if (!registerResponse.success)
+                    {
+                        Snackbar.make(mEmailView, "Unable to create user.", Snackbar.LENGTH_LONG).show();
+                        return false;
+                    }
+                    else
+                    {
+                        LoginModel loginModel = new LoginModel(this.user.email, this.user.password);
+                        Call<LoginResponse> loginCall = ApplicationContext.backendService.loginUser(loginModel);
+                        Response response1 = loginCall.execute();
+                        if (response1.isSuccessful())
+                        {
+                            LoginResponse loginResponse = (LoginResponse) response1.body();
+                            if (loginResponse.success)
+                            {
+                                ApplicationContext.token = loginResponse.data.token;
+                                ApplicationContext.loggedInUser = loginResponse.data.user;
+                                return true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Snackbar.make(mEmailView, "Problem communicating with the server.", Snackbar.LENGTH_LONG).show();
+                    return false;
                 }
             }
-
-            // TODO: register the new account here.
-            return true;
+            catch (IOException e)
+            {
+                Log.d("Register error", e.getMessage());
+                return false;
+            }
+            return false;
         }
 
         @Override
@@ -376,11 +513,13 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
             if (success)
             {
-                finish();
+                Intent mainActivityIntent = new Intent(RegisterActivity.this, MainActivity.class);
+                mainActivityIntent.setFlags(mainActivityIntent.getFlags() | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(mainActivityIntent);
             }
             else
             {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
+
                 mPasswordView.requestFocus();
             }
         }
